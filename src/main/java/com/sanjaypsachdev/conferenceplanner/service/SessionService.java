@@ -12,6 +12,8 @@ import com.sanjaypsachdev.conferenceplanner.api.SessionResponse;
 import com.sanjaypsachdev.conferenceplanner.api.SessionUpdateRequest;
 import com.sanjaypsachdev.conferenceplanner.data.SessionEntity;
 import com.sanjaypsachdev.conferenceplanner.data.SessionRepository;
+import com.sanjaypsachdev.conferenceplanner.error.BadRequestException;
+import com.sanjaypsachdev.conferenceplanner.error.NotFoundException;
 
 /**
  * Service for conference session business logic and persistence.
@@ -66,13 +68,13 @@ public class SessionService {
      *
      * @param id the session ID
      * @return the session as a {@link SessionResponse}
-     * @throws IllegalArgumentException if no session exists with the given ID
+     * @throws NotFoundException if no session exists with the given ID
      */
     public SessionResponse findById(Long id) {
         return sessionRepository
                 .findById(id)
                 .map(this::mapToResponse)
-                .orElseThrow(() -> new IllegalArgumentException("Session not found"));
+                .orElseThrow(() -> new NotFoundException("Session not found"));
     }
 
     /**
@@ -80,7 +82,7 @@ public class SessionService {
      *
      * @param request the creation payload (title, speaker, times, room, track)
      * @return the created session as a {@link SessionResponse}
-     * @throws IllegalArgumentException if start time is after end time
+     * @throws BadRequestException if start time is after end time
      */
     public SessionResponse addSession(SessionCreationRequest request) {
         validateTimes(request.startTime(), request.endTime());
@@ -95,12 +97,12 @@ public class SessionService {
      * @param id      the session ID to update
      * @param request the fields to update (title, speaker, times, room, track)
      * @return the updated session as a {@link SessionResponse}
-     * @throws IllegalArgumentException if the session is not found or times are invalid
+     * @throws NotFoundException if the session is not found
      */
     public SessionResponse updateSession(Long id, SessionUpdateRequest request) {
         validateTimes(request.startTime(), request.endTime());
         SessionEntity entity = sessionRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Session not found"));
+                .orElseThrow(() -> new NotFoundException("Session not found"));
         mapToEntity(request, entity);
         return mapToResponse(sessionRepository.save(entity));
     }
@@ -110,11 +112,11 @@ public class SessionService {
      * confirming it exists (throws otherwise).
      *
      * @param id the session ID to delete
-     * @throws IllegalArgumentException if no session exists with the given ID
+     * @throws NotFoundException if no session exists with the given ID
      */
     public void deleteSession(Long id) {
         sessionRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Session not found"));
+                .orElseThrow(() -> new NotFoundException("Session not found"));
         sessionRepository.deleteById(id);
     }
 
@@ -141,7 +143,7 @@ public class SessionService {
     /** Ensures start time is before end time; throws if not. */
     private void validateTimes(LocalDateTime startTime, LocalDateTime endTime) {
         if (startTime.isAfter(endTime)) {
-            throw new IllegalArgumentException("Start time must be before end time");
+            throw new BadRequestException("Start time must be before end time");
         }
     }
 
