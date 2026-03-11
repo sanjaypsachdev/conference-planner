@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sanjaypsachdev.conferenceplanner.config.AppProperties;
+
 /**
  * REST controller for health check endpoint.
  * Returns a simple health status response with timestamp and application name.
@@ -17,12 +19,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/health")
 public class HealthController {
+    private final AppProperties appProperties;
+
+    public HealthController(AppProperties appProperties) {
+        this.appProperties = appProperties;
+    }
+
     @GetMapping
     public Map<String, Object> health() {
         return Map.of(
                 "status", "UP",
                 "timestamp", System.currentTimeMillis(),
-                "app", "Conference Planner"
+                "seeding", appProperties.isSeeding(),
+                "app", appProperties.getName()
         );
     }
 }

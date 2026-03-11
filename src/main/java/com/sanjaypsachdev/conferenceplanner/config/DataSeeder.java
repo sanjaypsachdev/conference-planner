@@ -22,9 +22,9 @@ import com.sanjaypsachdev.conferenceplanner.data.SessionRepository;
 public class DataSeeder {
 
     @Bean
-    public CommandLineRunner initData(SessionRepository sessionRepository) {
+    public CommandLineRunner initData(SessionRepository sessionRepository, AppProperties appProperties) {
         return args -> {
-            if (sessionRepository.count() == 0) {
+            if (sessionRepository.count() == 0 && appProperties.isSeeding()) {
                 System.out.println("Seeding initial data...");
 
                 List<SessionEntity> sessions = List.of(
